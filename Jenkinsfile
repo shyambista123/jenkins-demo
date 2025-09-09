@@ -1,7 +1,8 @@
 pipeline {
     agent {
         node {
-            label 'docker-agent-alpine'
+            image 'maven:3.9.5-eclipse-temurin-21'
+            label 'maven-agent-alpine'
         }
     }
     triggers {
