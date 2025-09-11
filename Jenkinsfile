@@ -5,7 +5,7 @@ pipeline {
         }
     }
     triggers {
-            pollSCM '* * * * *'
+            pollSCM 'H/5 * * * *'
      }
      environment {
          DOCKERHUB_CREDENTIALS = credentials('shyambista-docker')
