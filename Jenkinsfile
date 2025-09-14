@@ -1,5 +1,9 @@
 pipeline {
-    agent none  // No global agent
+    agent any
+
+        tools {
+            maven 'maven_3_6_3'
+        }
 
     triggers {
         pollSCM 'H/5 * * * *'
@@ -9,14 +13,12 @@ pipeline {
     }
     stages {
         stage('Checkout') {
-            agent any  // This stage will run on any available agent
             steps {
                 echo "Checking out code from repository..."
                 checkout scm
             }
         }
         stage('Build') {
-            agent any  // This stage will run on any available agent
             steps {
                 echo "Building the Spring Boot application..."
                 sh '''
@@ -25,17 +27,15 @@ pipeline {
             }
         }
         stage('Login') {
-            agent any  // This stage will run on any available agent
             steps {
                 sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
             }
         }
         stage('Push') {
-            agent any  // This stage will run on any available agent
             steps {
                 echo "Push Docker Image to DockerHub"
                 sh '''
-                docker push shyambist/jenkins-demo:latest
+                docker push shyambist/jenkis-demo:latest
                 '''
             }
         }
@@ -52,7 +52,6 @@ pipeline {
         }
     }
 }
-
 
 // pipeline {
 //     agent {
