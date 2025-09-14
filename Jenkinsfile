@@ -1,15 +1,12 @@
 pipeline {
-    agent {
-        node {
-            label 'docker-agent'
-        }
-    }
+    // Use any available agent. This completely avoids the 'docker-agent' configuration issues.
+    // This agent only needs to have Java and Maven installed.
+    agent any
+
     triggers {
         pollSCM 'H/5 * * * *'
     }
-    environment {
-        DOCKERHUB_CREDENTIALS = credentials('shyambista-docker')
-    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -17,37 +14,41 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Build') {
+
+        stage('Build Application') {
             steps {
-                echo "Building the Spring Boot application..."
-                sh '''
-                docker build -t shyambist/jenkins-demo:latest .
-                '''
+                echo "Compiling and packaging the Spring Boot application..."
+                // Standard Maven command to build the JAR/WAR file.
+                sh 'mvn clean package'
             }
         }
-        stage('Login') {
+
+        stage('Build Docker Image') {
             steps {
-                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                echo "Building the Docker image using docker-maven-plugin..."
+                // This command tells the Maven plugin to build the image from your Dockerfile.
+                sh 'mvn docker:build'
             }
         }
-        stage('Push') {
+
+        stage('Push Docker Image') {
             steps {
-                echo "Push Docker Image to DockerHub"
-                sh '''
-                docker push shyambist/jenkis-demo:latest
-                '''
+                echo "Pushing Docker Image to DockerHub..."
+                // Use 'withRegistry' for secure, automatic login and logout.
+                // This is the modern, safe way to handle credentials.
+                withRegistry(registry: 'https://registry.hub.docker.com', credentialsId: 'shyambista-docker') {
+                    // This command tells the Maven plugin to push the image.
+                    // The plugin automatically uses the credentials provided by withRegistry.
+                    sh 'mvn docker:push'
+                }
             }
         }
     }
+
     post {
-        success {
-            echo "Build, test, and push were successful!"
-        }
-        failure {
-            echo "Build, test, or push failed. Check the logs for details."
-        }
         always {
-            sh 'docker logout'
+            echo "Pipeline finished."
+            // The 'withRegistry' block handles logout automatically, so we don't need 'docker logout'.
         }
     }
 }
