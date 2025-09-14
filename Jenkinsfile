@@ -1,7 +1,12 @@
 pipeline {
-    // Use any available agent. This completely avoids the 'docker-agent' configuration issues.
-    // This agent only needs to have Java and Maven installed.
+    // Use any available agent.
     agent any
+
+    // This block tells Jenkins to find the Maven installation named 'M3'
+    // and add it to the PATH for this pipeline's execution.
+    tools {
+        maven 'M3'
+    }
 
     triggers {
         pollSCM 'H/5 * * * *'
@@ -18,7 +23,7 @@ pipeline {
         stage('Build Application') {
             steps {
                 echo "Compiling and packaging the Spring Boot application..."
-                // Standard Maven command to build the JAR/WAR file.
+                // This 'mvn' command will now work because of the 'tools' block above.
                 sh 'mvn clean package'
             }
         }
@@ -26,7 +31,6 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo "Building the Docker image using docker-maven-plugin..."
-                // This command tells the Maven plugin to build the image from your Dockerfile.
                 sh 'mvn docker:build'
             }
         }
@@ -34,11 +38,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 echo "Pushing Docker Image to DockerHub..."
-                // Use 'withRegistry' for secure, automatic login and logout.
-                // This is the modern, safe way to handle credentials.
                 withRegistry(registry: 'https://registry.hub.docker.com', credentialsId: 'shyambista-docker') {
-                    // This command tells the Maven plugin to push the image.
-                    // The plugin automatically uses the credentials provided by withRegistry.
                     sh 'mvn docker:push'
                 }
             }
@@ -48,7 +48,6 @@ pipeline {
     post {
         always {
             echo "Pipeline finished."
-            // The 'withRegistry' block handles logout automatically, so we don't need 'docker logout'.
         }
     }
 }
