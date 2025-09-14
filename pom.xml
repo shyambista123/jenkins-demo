@@ -54,6 +54,23 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <!-- Add this to the <plugins> section of your pom.xml -->
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.44.0</version> <!-- Or any recent version -->
+                <configuration>
+                    <images>
+                        <image>
+                            <name>shyambist/jenkins-demo:latest</name>
+                            <build>
+                                <!-- Tells the plugin your Dockerfile is in the project's root directory -->
+                                <dockerFileDir>${project.basedir}</dockerFileDir>
+                            </build>
+                        </image>
+                    </images>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
