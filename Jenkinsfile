@@ -1,5 +1,7 @@
 pipeline {
-    agent docker-agent
+    agent {
+        label 'docker-agent'
+    }
 
     tools{
         maven 'M3'
