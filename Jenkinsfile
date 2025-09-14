@@ -31,7 +31,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo "Building the Docker image using docker-maven-plugin..."
-                sh 'mvn docker:build'
+                // We explicitly tell the plugin to use the Docker socket, overriding any environment variables.
+                sh 'mvn -Ddocker.host=unix:///var/run/docker.sock docker:build'
             }
         }
 
@@ -39,7 +40,8 @@ pipeline {
             steps {
                 echo "Pushing Docker Image to DockerHub..."
                 withRegistry(registry: 'https://registry.hub.docker.com', credentialsId: 'shyambista-docker') {
-                    sh 'mvn docker:push'
+                    // We also specify the docker.host here for the push goal.
+                    sh 'mvn -Ddocker.host=unix:///var/run/docker.sock docker:push'
                 }
             }
         }
