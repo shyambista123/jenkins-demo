@@ -2,7 +2,8 @@ pipeline {
     // Define a self-contained agent that is a Docker container.
     // This makes the pipeline reliable and independent of global agent configurations.
     agent {
-        docker {
+        // Your Jenkins version/plugin expects 'dockerContainer' instead of 'docker'.
+        dockerContainer {
             // Use a Maven image that includes JDK 21 to match the project's pom.xml.
             image 'maven:3.9.8-eclipse-temurin-21'
             // Run as root and mount the host's Docker socket into the container.
