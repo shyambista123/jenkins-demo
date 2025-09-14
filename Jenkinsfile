@@ -1,8 +1,5 @@
 pipeline {
-    agent {
-        node {
-            label 'docker-agent'
-        }
+    agent any
     }
     triggers {
         pollSCM 'H/5 * * * *'
@@ -21,7 +18,7 @@ pipeline {
             steps {
                 echo "Building the Spring Boot application..."
                 sh '''
-                docker build -t shyambist/jenkis-demo:latest .
+                docker build -t shyambist/jenkins-demo:latest .
                 '''
             }
         }
