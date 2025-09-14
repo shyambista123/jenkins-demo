@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-            docker {
-                image 'docker:24.0.5-dind'  // Use Docker-in-Docker image
-                label 'docker-agent'
-            }
-        }
+    agent none
 
     triggers {
         pollSCM 'H/5 * * * *'
