@@ -1,12 +1,18 @@
 pipeline {
-    // Use any available agent.
-    agent any
-
-    // This block tells Jenkins to find the Maven installation named 'M3'
-    // and add it to the PATH for this pipeline's execution.
-    tools {
-        maven 'M3'
+    // Define a self-contained agent that is a Docker container.
+    // This makes the pipeline reliable and independent of global agent configurations.
+    agent {
+        docker {
+            // Use a Maven image that includes JDK 21 to match the project's pom.xml.
+            image 'maven:3.9.8-eclipse-temurin-21'
+            // Run as root and mount the host's Docker socket into the container.
+            // This allows the 'mvn' command inside the container to talk to your
+            // host's Docker daemon, which is the standard "Docker-out-of-Docker" pattern.
+            args '-v /var/run/docker.sock:/var/run/docker.sock --user root'
+        }
     }
+
+    // The 'tools' block is no longer needed because Maven is part of the agent image.
 
     triggers {
         pollSCM 'H/5 * * * *'
@@ -20,28 +26,21 @@ pipeline {
             }
         }
 
-        stage('Build Application') {
+        stage('Package Application') {
             steps {
                 echo "Compiling and packaging the Spring Boot application..."
-                // This 'mvn' command will now work because of the 'tools' block above.
                 sh 'mvn clean package'
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build and Push Docker Image') {
             steps {
-                echo "Building the Docker image using docker-maven-plugin..."
-                // We explicitly tell the plugin to use the Docker socket, overriding any environment variables.
-                sh 'mvn -Ddocker.host=unix:///var/run/docker.sock docker:build'
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                echo "Pushing Docker Image to DockerHub..."
+                echo "Building and Pushing Docker Image to DockerHub..."
+                // 'withRegistry' securely handles login and logout to Docker Hub.
                 withRegistry(registry: 'https://registry.hub.docker.com', credentialsId: 'shyambista-docker') {
-                    // We also specify the docker.host here for the push goal.
-                    sh 'mvn -Ddocker.host=unix:///var/run/docker.sock docker:push'
+                    // The docker-maven-plugin automatically finds the mounted Docker socket.
+                    // We can run both goals in a single, efficient command.
+                    sh 'mvn docker:build docker:push'
                 }
             }
         }
