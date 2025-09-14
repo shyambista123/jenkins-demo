@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent docker-agent
 
     tools{
         maven 'M3'
