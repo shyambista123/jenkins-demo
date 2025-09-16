@@ -18,7 +18,7 @@ pipeline {
             steps {
                 echo "Building the Spring Boot application..."
                 sh '''
-                docker build -t shyambist/jenkins-demo:latest .
+                docker build -t shyambist/jenkins-demo:v1.1.${BUILD_NUMBER} .
                 '''
             }
         }
@@ -33,6 +33,11 @@ pipeline {
                 sh '''
                 docker push shyambist/jenkins-demo:latest
                 '''
+            }
+        }
+        stage('Trigger GitHub Push') {
+            steps {
+                build job: 'push_new_docker_hub_image_tag_to_github', wait: true, parameters: [string(name: 'Build_Number_Image', value: "${BUILD_NUMBER}")]
             }
         }
     }
