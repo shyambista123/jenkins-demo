@@ -31,7 +31,7 @@ pipeline {
             steps {
                 echo "Push Docker Image to DockerHub"
                 sh '''
-                docker push shyambist/jenkins-demo:latest
+                docker push shyambist/jenkins-demo:v1.1.${BUILD_NUMBER}
                 '''
             }
         }
