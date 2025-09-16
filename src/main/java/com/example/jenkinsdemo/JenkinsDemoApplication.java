@@ -8,7 +8,6 @@ public class JenkinsDemoApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(JenkinsDemoApplication.class, args);
-        System.out.println("✅ Spring Boot App started! Exiting now...");
-        System.exit(0);
+        System.out.println("✅ Spring Boot App started!");
     }
 }
